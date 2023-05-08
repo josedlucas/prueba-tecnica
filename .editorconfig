@@ -1,0 +1,7 @@
+root = true
+## Tab indentation for all files
+## Nota: No cambiar esta configuración, ya que se usa para la indentación
+# de los archivos de configuración del proyectos wortix.
+# En caso de querer agregar algo mas agregelo a partir de la linea 10 y notificalo al equipo de desarrollo.
+[*]
+indent_style = tab

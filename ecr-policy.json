@@ -1,0 +1,22 @@
+{
+	"Version" : "2008-10-17",
+	"Statement" : [
+		{
+			"Sid" : "allow public pull",
+			"Effect" : "Allow",
+			"Principal" : "*",
+			"Action" : [
+				"ecr:BatchCheckLayerAvailability",
+				"ecr:BatchGetImage",
+				"ecr:GetDownloadUrlForLayer",
+				"ecr:BatchGetImage",
+				"ecr:BatchCheckLayerAvailability",
+				"ecr:CompleteLayerUpload",
+				"ecr:GetDownloadUrlForLayer",
+				"ecr:InitiateLayerUpload",
+				"ecr:PutImage",
+				"ecr:UploadLayerPart"
+			]
+		}
+	]
+}

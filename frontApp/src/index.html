@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		#app {
+			height: 400px;
+		}
+	</style>
+</head>
+<body>
+<div id="app">
+	<v-chart :option="option" autoresize />
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue@3.2.45"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-echarts@latest"></script>
+<script>
+	Vue.createApp({
+		data() {
+			return {
+				option: {
+					title: {
+						text: 'Precio del Bitcoin'
+					},
+					tooltip: {},
+					legend: {
+						data:['Precio del Bitcoin en USD']
+					},
+					xAxis: {
+						data: []
+					},
+					yAxis: {},
+					series: [{
+						name: 'Precio del Bitcoin en USD',
+						type: 'bar',
+						data: []
+					}]
+				},
+			};
+		},
+		async mounted () {
+			await fetch('https://8c0uanbsv5.execute-api.us-east-1.amazonaws.com/dev/get-btc-price')
+			.then(response => response.json())
+			.then(data => {
+				console.log(data);
+				this.option = {
+					...this.option,
+					xAxis: {
+						data: data.dates
+					},
+					series: [{
+						...this.option.series[0],
+						data: data.prices,
+					}],
+				};
+			});
+		},
+	})
+	.component('v-chart', VueECharts)
+	.mount('#app');
+</script>
+</body>
+</html>

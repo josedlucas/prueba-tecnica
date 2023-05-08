@@ -1,0 +1,115 @@
+service: tecnicaltest
+
+
+frameworkVersion: '3'
+
+useDotenv: true
+
+custom:
+    stages:
+        dev: false
+        prod: false
+        local: true
+    plugins:
+        dev:
+        prod:
+        local:
+            - serverless-offline
+            - serverless-dotenv-plugin
+
+provider:
+    name: aws
+    runtime: python3.9
+    region: us-east-1
+    stage: ${opt:stage, 'dev'}
+    apiGateway:
+        shouldStartNameWithService: true
+    tracing:
+        lambda: true
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+          Resource:
+              - "Fn::GetAtt": [BTCPriceTable, Arn]
+
+package:
+    individually: true
+    exclude:
+        - node_modules/**
+        - frontApp/**
+        - src/**
+        - .gitignore
+        - .git/**
+        - .github/**
+        - .env/**
+        - .vscode/**
+        - package-lock.json
+        - package.json
+        - aws_requirements.txt
+        - README.md
+        - .editorconfig
+
+layers:
+    pythonAppDependencies:
+        path: layers/tools
+        name: tecnicaltest-${opt:stage}
+        compatibleRuntimes:
+            - python3.9
+        description: Capa de dependencias de la aplicacion
+        allowedAccounts:
+            - '*'
+        compatibleArchitectures:
+            - x86_64
+
+functions:
+    getBTCPrice:
+        handler: src/get-btc-price.getBtcPrice
+        events:
+            - schedule: rate(6 hours)
+        package:
+            include:
+                - src/get-btc-price.py
+        layers:
+            - {Ref: PythonAppDependenciesLambdaLayer}
+    getBTCPriceAll:
+        handler: src/get-btc-price-all.getBtcPriceAll
+        events:
+            - http:
+                path: get-btc-price
+                method: get
+                cors:
+                    origin: "*"
+                    headers: "*"
+        package:
+            include:
+                - src/get-btc-price-all.py
+        layers:
+            - {Ref: PythonAppDependenciesLambdaLayer}
+
+resources:
+    Resources:
+        BTCPriceTable:
+            Type: AWS::DynamoDB::Table
+            Properties:
+                TableName: BTCPriceTable
+                AttributeDefinitions:
+                    - AttributeName: price
+                      AttributeType: N
+                    - AttributeName: date
+                      AttributeType: S
+                KeySchema:
+                    - AttributeName: price
+                      KeyType: HASH
+                    - AttributeName: date
+                      KeyType: RANGE
+                ProvisionedThroughput:
+                    ReadCapacityUnits: 1
+                    WriteCapacityUnits: 1
+
+
